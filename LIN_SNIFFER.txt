@@ -1,0 +1,45 @@
+int recPin = 0;  //the pin receiving the serial input data
+long baudRate;   // global in case useful elsewhere in a sketch
+int incomingByte = 0; // for incoming serial data
+void setup()
+ {
+  pinMode(recPin, INPUT);      // make sure serial in is a input pin
+  digitalWrite (recPin, HIGH); // pull up enabled just for noise protection
+  
+  baudRate = detRate(recPin);  // Function finds a standard baudrate of either
+                               // 1200,2400,4800,9600,14400,19200,28800,38400,57600,115200 
+                               // by having sending circuit send "U" characters.
+                               // Returns 0 if none or under 1200 baud  
+  Serial.begin(baudRate);
+  Serial.println();
+  Serial.print("Detected baudrate at ");
+  Serial.println(baudRate);
+ }
+
+void loop()
+ {
+  // nothing to do here
+  // send data only when you receive data:
+  if (Serial.available() > 0) {
+    // read the incoming byte:
+    incomingByte = Serial.read();
+
+    // say what you got:
+    Serial.print("I received: ");
+    Serial.println(incomingByte, DEC);
+  }
+ }
+
+long detRate(int recpin)  // function to return valid received baud rate
+                          // Note that the serial monitor has no 600 baud option and 300 baud
+                          // doesn't seem to work with version 22 hardware serial library
+  {
+   while(digitalRead(recpin) == 1){} // wait for low bit to start
+   long baud;
+   long rate = pulseIn(recpin,LOW);   // measure zero bit width from character 'U'
+   if(rate>=1){  
+      baud = 1000000/rate;}
+      else 
+      baud = 0;  
+   return baud; 
+  }
